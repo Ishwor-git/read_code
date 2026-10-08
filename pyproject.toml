@@ -1,0 +1,49 @@
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[project]
+name = "codedoc"
+version = "0.0.1"
+description = "RAG-powered documentation engine for codebases"
+readme = "README.md"
+requires-python = ">=3.11,<3.13"
+license = { text = "MIT" }
+authors = [{ name = "codedoc" }]
+dependencies = [
+  "typer>=0.12",
+  "rich>=13.7",
+  "pydantic-settings>=2.4",
+]
+
+[project.optional-dependencies]
+ml = [
+  "chromadb>=0.5",
+  "sentence-transformers>=3.0",
+  "tree-sitter>=0.23",
+  "tree-sitter-python>=0.23",
+  "rank-bm25>=0.2",
+  "tiktoken>=0.7",
+  "openai>=1.40",
+  "gitpython>=3.1",
+]
+dev = [
+  "pytest>=8.0",
+  "ruff>=0.6",
+]
+
+[project.scripts]
+codedoc = "codedoc.cli:app"
+
+[tool.hatch.build.targets.wheel]
+packages = ["codedoc"]
+
+[tool.ruff]
+line-length = 100
+target-version = "py311"
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "UP", "B"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
