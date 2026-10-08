@@ -3,6 +3,9 @@
 ## 1. Goal
 CLI tool that ingests a codebase (GitHub URL or local path), builds a searchable RAG index, and answers natural-language documentation questions with grounded, cited answers (`path:line`).
 
+> Locked: project/package name = `codedoc`; v1 language support = Python only
+> (non-Python files skipped; line-window fallback deferred). See `phase0.md`.
+
 ## 2. Architecture (5 layers)
 
 **Ingestion** → **Index** → **Retrieval** → **Generation** → **CLI**
@@ -46,7 +49,7 @@ read_code/
 ```
 
 ## 4. Key design decisions
-- **Chunking**: AST-aware (functions, classes, methods, module headers) via tree-sitter; metadata = path, language, symbol, kind, line range, imports, docstring. Line-window fallback for unsupported languages. This beats naive line splitting for code quality.
+- **Chunking**: AST-aware (functions, classes, methods, module headers) via tree-sitter; metadata = path, language, symbol, kind, line range, imports, docstring. v1 is Python-only via `tree-sitter-python`; non-Python files are skipped (line-window fallback deferred). This beats naive line splitting for code quality.
 - **Retrieval**: Hybrid — vector top-k + BM25 top-k merged with Reciprocal Rank Fusion, then optional local cross-encoder rerank. Strongly recommended for code (identifiers/names matter).
 - **Embeddings**: local `sentence-transformers` (start with `BAAI/bge-small-en-v1.5`, optionally `jina-embeddings-v2-base-code`).
 - **Vector store**: Chroma persistent, one collection per repo (keyed by resolved path/URL hash) for isolation.
@@ -64,7 +67,7 @@ codedoc clear
 ```
 
 ## 6. Dependencies
-`typer`, `rich`, `pydantic-settings`, `chromadb`, `sentence-transformers`, `tree-sitter` + language packs, `rank-bm25`, `tiktoken`, `openai`, `gitpython`, `pytest`.
+`typer`, `rich`, `pydantic-settings`, `chromadb`, `sentence-transformers`, `tree-sitter` + `tree-sitter-python` (Python only for v1), `rank-bm25`, `tiktoken`, `openai`, `gitpython`, `pytest`.
 
 ## 7. Milestones
 - **M0** Scaffolding: pyproject, config, CLI skeleton, logging.
@@ -80,7 +83,7 @@ codedoc clear
 Unit tests for walker/chunker/retriever; a small golden Q&A eval set run against a fixture repo (ragas-style or hand-rolled).
 
 ## Open decisions before execution
-1. **Initial language support** — recommend Python + JavaScript/TypeScript + Go first; others fall back to line-window. Agree?
+1. ~~**Initial language support**~~ **RESOLVED**: Python only for v1 (`tree-sitter-python`); non-Python files skipped.
 2. **Hybrid + rerank in M1 or defer to M5?** Recommend building vector-only MVP first (M3), then adding hybrid.
-3. **Project name** — `codedoc` / `codewiki` / `readcode`?
+3. ~~**Project name**~~ **RESOLVED**: `codedoc`.
 4. **Private repo auth** — needed now (token support) or public repos only for v1?
